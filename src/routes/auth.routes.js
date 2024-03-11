@@ -13,6 +13,7 @@ const {
   forgetPassword,
   userProfile,
   users,
+  resetpassword
 } = require("../controller/auth.controller");
 //Importing the JWT verifyer from auth middleware
 const verifyToken = require("../middleware/auth.middleware");
@@ -28,5 +29,6 @@ router.post("/forgot-password", forgetPassword);
 router.get("/profile/:id", verifyToken, userProfile);
 //all users route with
 router.get("/users", verifyToken, users);
-
+//Reset Password
+router.post("/reset-password/:token", resetpassword);
 module.exports = router;

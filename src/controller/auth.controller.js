@@ -196,7 +196,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
         to: email,
         subject: "Reset Password",
         html: `<h2>Please click on given link to reset your password</h2>
-                <p>${process.env.CLIENT_URL}/resetpassword/${jwtToken}</p>`,
+                <p>${process.env.CLIENT_URL}reset-password/${jwtToken}</p>`,
       };
 
       transporter.sendMail(mailOptions, function (error, info) {
@@ -219,10 +219,50 @@ const forgetPassword = asyncHandler(async (req, res) => {
   }
 });
 
+const resetpassword = asyncHandler(async (req, res) => {
+
+  
+  const { password, confirmPassword, token} = req.body;
+  console.log(token);
+  
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decoded);
+
+    const userBeforeUpdate = await userModel.findOne({ email: decoded.email });
+    console.log("User before password update:", userBeforeUpdate);
+
+      // Check if newPassword and confirmPassword match
+      if (password !== confirmPassword) {
+        return res.status(400).json({
+            message: "Passwords do not match.",
+        });
+    }
+
+    // Hash new password
+    const hash = await bcrypt.hash(password, 10);
+    // Update password
+    console.log("New hashed password:", hash);
+    await userModel.findOneAndUpdate(
+      { email: decoded.email },
+      { $set: { password: hash } }
+    );
+    return res.status(200).json({
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   register,
   login,
   forgetPassword,
   userProfile,
   users,
+  resetpassword,
 };
